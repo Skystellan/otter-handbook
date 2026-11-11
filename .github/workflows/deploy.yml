@@ -24,7 +24,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      # 用 npm install 而不是 npm ci：在 Mac 上生成的 lock 文件会漏掉 Linux 上才需要的可选依赖，npm ci 会因此报错
+      - run: npm install --no-audit --no-fund
       - run: npm run build
         env:
           SITE_URL: https://skystellan.github.io
