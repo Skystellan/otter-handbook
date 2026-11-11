@@ -1,0 +1,110 @@
+# 文献库：一条一篇。components 填章节 id，会自动挂到对应章节下面。
+# takeaway 写一句话 ——「这篇对训练小模型意味着什么」。下面的条目只填了书目信息。
+
+- id: vaswani2017
+  title: Attention Is All You Need
+  authors: Vaswani et al.
+  year: 2017
+  url: https://arxiv.org/abs/1706.03762
+  components: [attention, residual]
+
+- id: hinton2015
+  title: Distilling the Knowledge in a Neural Network
+  authors: Hinton, Vinyals & Dean
+  year: 2015
+  url: https://arxiv.org/abs/1503.02531
+  components: [distillation, objective]
+
+- id: loshchilov2017
+  title: Decoupled Weight Decay Regularization
+  authors: Loshchilov & Hutter
+  year: 2017
+  url: https://arxiv.org/abs/1711.05101
+  components: [optimizer, regularization]
+
+- id: zhang2019
+  title: Root Mean Square Layer Normalization
+  authors: Zhang & Sennrich
+  year: 2019
+  url: https://arxiv.org/abs/1910.07467
+  components: [normalization]
+
+- id: shazeer2020
+  title: GLU Variants Improve Transformer
+  authors: Shazeer
+  year: 2020
+  url: https://arxiv.org/abs/2002.05202
+  components: [ffn]
+
+- id: su2021
+  title: "RoFormer: Enhanced Transformer with Rotary Position Embedding"
+  authors: Su et al.
+  year: 2021
+  url: https://arxiv.org/abs/2104.09864
+  components: [position]
+
+- id: ainslie2023
+  title: "GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints"
+  authors: Ainslie et al.
+  year: 2023
+  url: https://arxiv.org/abs/2305.13245
+  components: [attention]
+
+- id: eldan2023
+  title: "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?"
+  authors: Eldan & Li
+  year: 2023
+  url: https://arxiv.org/abs/2305.07759
+  components: [data, evaluation]
+
+# ── 前沿结构：架构图上那些缩写的出处 ──────────────────────────
+
+- id: kimi-linear-2025
+  title: "Kimi Linear: An Expressive, Efficient Attention Architecture"
+  authors: Moonshot AI
+  year: 2025
+  url: https://arxiv.org/abs/2510.26692
+  components: [attention]
+
+- id: xie2025
+  title: "mHC: Manifold-Constrained Hyper-Connections"
+  authors: Xie et al.
+  year: 2025
+  url: https://arxiv.org/abs/2512.24880
+  components: [residual]
+
+- id: elango2026
+  title: "LatentMoE: Toward Optimal Accuracy per FLOP and Parameter in Mixture of Experts"
+  authors: Elango et al.
+  year: 2026
+  url: https://arxiv.org/abs/2601.18089
+  components: [ffn]
+
+- id: jeddi2026
+  title: "LoopFormer: Elastic-Depth Looped Transformers for Latent Reasoning via Shortcut Modulation"
+  authors: Jeddi et al.
+  year: 2026
+  venue: ICLR 2026
+  url: https://arxiv.org/abs/2602.11451
+  components: [loop]
+
+- id: attnres2026
+  title: Attention Residuals
+  authors: Kimi Team
+  year: 2026
+  url: https://arxiv.org/abs/2603.15031
+  components: [residual]
+
+- id: deepseek-v4-2026
+  title: "DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence"
+  authors: DeepSeek-AI
+  year: 2026
+  url: https://arxiv.org/abs/2606.19348
+  components: [attention, residual, optimizer]
+
+- id: kubicek2026
+  title: "Latent Sparse Attention: Towards Subquadratic Ultra-Long Context Attention"
+  authors: Kubicek et al.
+  year: 2026
+  url: https://arxiv.org/abs/2610.42147
+  components: [attention]

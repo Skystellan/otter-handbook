@@ -1,0 +1,58 @@
+---
+import { getCollection, render } from 'astro:content';
+import 'katex/dist/katex.min.css';
+import '../../styles/prose.css';
+import '../../styles/inner.css';
+import Base from '../../layouts/Base.astro';
+import { fmtDate, getChapters, pad2 } from '../../lib/handbook';
+import { kinds } from '../../site.config';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes', ({ data }) => !data.draft);
+  return notes.map((note) => ({ params: { id: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+const kind = kinds[note.data.kind];
+const chapters = Object.fromEntries((await getChapters()).map((c) => [c.id, c]));
+const linked = note.data.components.map((id) => chapters[id]).filter((c) => c !== undefined);
+---
+
+<Base title={note.data.title} description={note.data.summary}>
+  <section class="ph">
+    <div class="wrap">
+      <p class="crumbs label">
+        <a href={url('/notes/')}>观察</a>
+        <span>/</span>
+        <time datetime={note.data.date.toISOString()}>{fmtDate(note.data.date)}</time>
+        <span>/</span>
+        <span class="kind" data-kind={note.data.kind}>{kind.mark} {kind.en}</span>
+        {note.data.sample && <span>· 示例</span>}
+      </p>
+      <div class="ph-title">
+        <h1 style={`view-transition-name:note-${note.id};font-size:clamp(30px,4.4vw,60px)`}>{note.data.title}</h1>
+      </div>
+      {note.data.summary && <p class="ph-lead">{note.data.summary}</p>}
+      {
+        linked.length > 0 && (
+          <div class="ph-meta chips">
+            <span class="label">挂在</span>
+            {linked.map((c) => (
+              <a class="chip" href={url(`/handbook/${c.id}/`)}>{pad2(c.data.order)} {c.data.title}</a>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <article class="prose page-body" style="--chapter:'§'">
+        <Content />
+      </article>
+    </div>
+  </section>
+</Base>

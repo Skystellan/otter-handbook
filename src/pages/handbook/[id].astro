@@ -1,0 +1,227 @@
+---
+/**
+ * 章节页。三栏：
+ *   左  小地图（你在这里）
+ *   中  本章结构 → 正文 → 挂在这一章下的观察与文献 → 上一章 / 下一章
+ *   右  本页目录
+ * 大标题和目录里那一行的标题同名，所以从目录点进来的时候，标题是「长」过来的。
+ */
+import { getCollection, render } from 'astro:content';
+import 'katex/dist/katex.min.css';
+import '../../styles/prose.css';
+import '../../styles/atlas.css';
+import '../../styles/home.css';
+import '../../styles/inner.css';
+import Base from '../../layouts/Base.astro';
+import Atlas from '../../components/Atlas.astro';
+import { fmtDate, getChapters, getOutline, pad2 } from '../../lib/handbook';
+import { kinds, parts, statusLabel } from '../../site.config';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const chapters = await getChapters();
+  return chapters.map((chapter, i) => ({
+    params: { id: chapter.id },
+    props: { chapter, prev: chapters[i - 1], next: chapters[i + 1] },
+  }));
+}
+
+const { chapter, prev, next } = Astro.props;
+const { data } = chapter;
+const part = parts[data.part];
+const no = pad2(data.order);
+
+const { Content, headings } = await render(chapter);
+const hasBody = (chapter.body ?? '').trim().length > 0;
+const outline = await getOutline(chapter);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const notes = (await getCollection('notes', (n) => !n.data.draft && n.data.components.includes(chapter.id))).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const papers = (await getCollection('papers', (p) => p.data.components.includes(chapter.id))).sort(
+  (a, b) => a.data.year - b.data.year,
+);
+const source = `src/content/handbook/${no}-${chapter.id}.md`;
+---
+
+<Base title={`${no} ${data.title}`} description={data.blurb}>
+  <section class="ph">
+    <div class="wrap">
+      <p class="crumbs label">
+        <a href={url('/handbook/')}>手册</a>
+        <span>/</span>
+        <span>Part {part.no} · {part.zh}</span>
+        <span>/</span>
+        <span class="accent">§{no}</span>
+      </p>
+      <div class="ph-title">
+        <span class="ph-no" aria-hidden="true">{no}</span>
+        <div>
+          <h1 style={`view-transition-name:ch-${chapter.id}`}>{data.title}</h1>
+          <p class="ph-en">{data.en}</p>
+        </div>
+      </div>
+      <p class="ph-lead">{data.blurb}</p>
+      <dl class="ph-meta">
+        <div>
+          <dt class="label">状态</dt>
+          <dd><span class="status" data-status={data.status}>{statusLabel[data.status]}</span></dd>
+        </div>
+        <div>
+          <dt class="label">完成度</dt>
+          <dd><span class="meter" style={`--p:${data.progress}`}></span>{Math.round(data.progress * 100)}%</dd>
+        </div>
+        <div><dt class="label">观察</dt><dd>{pad2(notes.length)}</dd></div>
+        <div><dt class="label">文献</dt><dd>{pad2(papers.length)}</dd></div>
+        {data.updated && <div><dt class="label">更新</dt><dd>{fmtDate(data.updated)}</dd></div>}
+      </dl>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap ch">
+      <aside class="ch-rail">
+        <p class="label"><span>你在这里</span><span class="accent">§{no}</span></p>
+        <Atlas current={chapter.id} compact />
+      </aside>
+
+      <article class="ch-main">
+        {
+          outline.length > 0 && (
+            <section aria-labelledby="outline-h">
+              <p class="label sec-label" id="outline-h">本章结构 · {pad2(outline.length)} 类</p>
+              <ol class="outline">
+                {outline.map((o, i) => (
+                  <li>
+                    <span class="n">{no}.{i + 1}</span>
+                    <span class="t">{o.anchor ? <a href={`#${o.anchor}`}>{o.title}</a> : o.title}</span>
+                    <span class="i">{o.items.map((item) => <span class="chip">{item}</span>)}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          hasBody ? (
+            <div class="prose" style={`--chapter:'${no}'`} data-prose>
+              <Content />
+            </div>
+          ) : (
+            <div class="empty">
+              <p class="label">未动笔</p>
+              <h2>这一章还没有写。</h2>
+              <p>
+                上面的提纲是打算写的范围。正文是一个 Markdown 文件，放在 <code>{source}</code>。
+              </p>
+            </div>
+          )
+        }
+
+        <section class="attached" id="notes">
+          <p class="label sec-label"><span class="accent">◆</span>挂在这一章下的观察 · {pad2(notes.length)}</p>
+          {
+            notes.length > 0 ? (
+              <ol class="notes">
+                {notes.map((n) => (
+                  <li>
+                    <a class="note" href={url(`/notes/${n.id}/`)}>
+                      <time datetime={fmtDate(n.data.date)}>{fmtDate(n.data.date)}</time>
+                      <span class="kind" data-kind={n.data.kind}>{kinds[n.data.kind].mark} {kinds[n.data.kind].zh}</span>
+                      <div>
+                        <h3>{n.data.title}</h3>
+                        {n.data.summary && <p>{n.data.summary}</p>}
+                      </div>
+                      <span class="row-arr" aria-hidden="true">→</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p>还没有。在笔记的 frontmatter 里写上 <code>components: [{chapter.id}]</code> 就会出现在这里。</p>
+            )
+          }
+        </section>
+
+        <section class="attached" id="papers">
+          <p class="label sec-label"><span>◇</span>相关文献 · {pad2(papers.length)}</p>
+          {
+            papers.length > 0 ? (
+              <ol class="refs">
+                {papers.map((p) => (
+                  <li>
+                    <span class="y">{p.data.year}</span>
+                    <span>
+                      {p.data.url ? <a href={p.data.url} rel="noopener">{p.data.title} ↗</a> : p.data.title}
+                      <small>{p.data.authors}{p.data.venue && ` · ${p.data.venue}`}</small>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p>还没有。在 <code>src/data/papers.yaml</code> 里给一篇文献写上 <code>components: [{chapter.id}]</code>。</p>
+            )
+          }
+        </section>
+
+        <nav class="pager" aria-label="上一章和下一章">
+          {
+            prev && (
+              <a href={url(`/handbook/${prev.id}/`)} rel="prev">
+                <span class="label">← 上一章 · {pad2(prev.data.order)}</span>
+                <b>{prev.data.title}</b>
+              </a>
+            )
+          }
+          {
+            next && (
+              <a href={url(`/handbook/${next.id}/`)} rel="next">
+                <span class="label">下一章 · {pad2(next.data.order)} →</span>
+                <b>{next.data.title}</b>
+              </a>
+            )
+          }
+        </nav>
+      </article>
+
+      {
+        toc.length > 0 && (
+          <nav class="ch-rail ch-toc" aria-label="本页目录">
+            <p class="label">本页目录</p>
+            <ol>
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`} data-depth={h.depth}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+    </div>
+  </section>
+</Base>
+
+<script>
+  // 本页目录：读到哪一节，哪一条就亮
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.ch-toc a')];
+  if (links.length && 'IntersectionObserver' in window) {
+    const byId = new Map(links.map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          links.forEach((a) => a.classList.remove('is-here'));
+          byId.get(entry.target.id)?.classList.add('is-here');
+        }
+      },
+      { rootMargin: '-15% 0px -70% 0px' },
+    );
+    byId.forEach((_, id) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  }
+</script>

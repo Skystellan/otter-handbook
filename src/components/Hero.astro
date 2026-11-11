@@ -1,0 +1,128 @@
+---
+/**
+ * 封面。
+ *
+ * 整块封面底下铺着一张 WebGL 画布：一只仰面漂着的海獭，抱着一块克莱因蓝的石头。
+ * 它是实时算出来的（src/lib/otter/），再「印」成双色网点落在纸面上 —— 所以它会看着你的指针，
+ * 点一下水面会起涟漪，点它会把石头抛起来再接住。底下那一排按钮可以换一种印法。
+ * 没有 WebGL2 的浏览器只会少这张画，文字都在。
+ */
+import { fmtDate, pad2 } from '../lib/handbook';
+import { site } from '../site.config';
+import { url } from '../lib/url';
+
+interface Props {
+  chapters: number;
+  notes: number;
+  papers: number;
+  latest?: Date;
+}
+
+const { chapters, notes, papers, latest } = Astro.props;
+
+const modes = [
+  { id: 'halftone', zh: '网点', slug: '双色网点 · K 45° + B 15° · 4 px' },
+  { id: 'ascii', zh: '字符', slug: '字符 · 十级 · 4 × 8 px' },
+  { id: 'dither', zh: '抖动', slug: '有序抖动 · Bayer 4×4 · 2 px' },
+  { id: 'photo', zh: '原片', slug: '原片 · 光线步进 · 没过印刷机' },
+];
+---
+
+<section class="hero" data-hero>
+  <canvas class="hero-canvas" aria-hidden="true"></canvas>
+  <i class="reg reg-tl" aria-hidden="true"></i>
+  <i class="reg reg-tr" aria-hidden="true"></i>
+
+  <div class="wrap hero-wrap">
+    <p class="hero-kicker label">
+      <span class="blip" aria-hidden="true"></span>
+      {site.version} · 持续更新中{latest && ` · ${fmtDate(latest)}`}
+    </p>
+
+    <h1 class="hero-title">
+      <span class="hero-word" aria-label={site.name}>
+        {[...site.name].map((ch, i) => <span style={`--i:${i}`} aria-hidden="true">{ch}</span>)}
+      </span>
+    </h1>
+    <p class="hero-zh">{site.nameZh}</p>
+    <p class="hero-en">{site.taglineEn}</p>
+    <p class="hero-lead">{site.tagline}记录训练小模型时的第一手观察，也汇总文献里能复用的经验。</p>
+
+    <div class="hero-cta">
+      <a class="btn btn-primary" href={url('/handbook/')}>
+        开始阅读
+        <span class="arr">→</span>
+      </a>
+      <a class="btn" href="#atlas">
+        先看地图
+        <span class="arr">↓</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap hero-foot">
+    <p class="label hero-count">
+      <b>{pad2(chapters)}</b> 章 · <b>{pad2(notes)}</b> 条观察 · <b>{pad2(papers)}</b> 篇文献
+    </p>
+
+    <div class="modes" role="radiogroup" aria-label="这张画怎么印" data-no-ripple>
+      {
+        modes.map((m, i) => (
+          <button type="button" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-mode={m.id} data-slug={m.slug}>
+            {m.zh}
+          </button>
+        ))
+      }
+    </div>
+
+    <p class="label hero-slug" aria-live="polite">
+      <span class="swatches" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span data-slug-text>{modes[0]!.slug}</span>
+    </p>
+  </div>
+
+  <p class="label hero-hint" aria-hidden="true">点一下水面试试 ↗</p>
+</section>
+
+<script>
+  import { mountOtter, type PrintMode } from '../lib/otter/renderer';
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  const canvas = hero?.querySelector('canvas');
+  if (hero && canvas) {
+    // 宽屏：海獭在右边，左边留给文字；窄屏：文字在上，它在下
+    const wide = (w: number) => w >= 900;
+    const otter = mountOtter(hero, canvas, {
+      center: (w, h) => (wide(w) ? [0.705, 0.5] : [0.5, 1 - Math.min(0.31, (w * 0.545) / h)]),
+      span: (w, h) => (wide(w) ? Math.min(w * 0.42, h * 0.84) : Math.min(w * 0.76, h * 0.42)),
+      shy: (w) => (wide(w) ? [0.3, 0.52, -1, -0.5] : [-1, -0.5, 0.5, 0.64]),
+    });
+    hero.classList.toggle('has-otter', !!otter);
+
+    const slug = hero.querySelector('[data-slug-text]');
+    const buttons = [...hero.querySelectorAll<HTMLButtonElement>('[data-mode]')];
+    const choose = (btn: HTMLButtonElement) => {
+      buttons.forEach((b) => b.setAttribute('aria-checked', String(b === btn)));
+      otter?.mode(btn.dataset.mode as PrintMode);
+      if (slug) slug.textContent = btn.dataset.slug ?? '';
+      hero.dataset.print = btn.dataset.mode;
+    };
+    buttons.forEach((btn, i) => {
+      btn.addEventListener('click', () => choose(btn));
+      // 单选组：左右方向键换一个
+      btn.addEventListener('keydown', (e) => {
+        const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!step) return;
+        const next = buttons[(i + step + buttons.length) % buttons.length]!;
+        next.focus();
+        choose(next);
+      });
+    });
+
+    // 点过一次水面，那句提示就不用再留着了
+    hero.addEventListener('pointerdown', () => hero.classList.add('is-touched'), { once: true });
+
+    // 调试 / 截图用：window.__otter.renderAt(3.4)
+    (window as unknown as { __otter?: typeof otter }).__otter = otter;
+  }
+</script>

@@ -1,0 +1,70 @@
+---
+/** 文献：一张表。数据在 src/data/papers.yaml。 */
+import { getCollection } from 'astro:content';
+import '../styles/inner.css';
+import Base from '../layouts/Base.astro';
+import { getChapters, pad2 } from '../lib/handbook';
+import { url } from '../lib/url';
+
+const papers = (await getCollection('papers')).sort(
+  (a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title),
+);
+const chapters = Object.fromEntries((await getChapters()).map((c) => [c.id, c]));
+---
+
+<Base title="文献" description="与训练小模型相关的工作，以及每一篇值得带走的一句话。">
+  <section class="ph">
+    <div class="wrap">
+      <p class="crumbs label"><span class="accent">§</span><span>Papers</span></p>
+      <div class="ph-title">
+        <div>
+          <h1>文献</h1>
+          <p class="ph-en">Roads other people have already walked.</p>
+        </div>
+      </div>
+      <p class="ph-lead">每篇只留书目信息、它属于哪些组件，以及一句话 —— 这篇对训练小模型意味着什么。</p>
+      <dl class="ph-meta">
+        <div><dt class="label">共</dt><dd>{pad2(papers.length)} 篇</dd></div>
+        <div><dd class="label">目前是示例条目，只填了书目信息</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap pad">
+      <div class="papers" role="table">
+        <div class="paper paper-head label" role="row">
+          <span role="columnheader">年份</span>
+          <span role="columnheader">标题 / 作者</span>
+          <span role="columnheader">组件</span>
+          <span role="columnheader">一句话</span>
+        </div>
+        {
+          papers.map((p) => (
+            <div class="paper" role="row" id={p.id}>
+              <span class="y" role="cell">{p.data.year}</span>
+              <span role="cell">
+                {p.data.url ? (
+                  <a class="t" href={p.data.url} rel="noopener">{p.data.title} ↗</a>
+                ) : (
+                  <span class="t">{p.data.title}</span>
+                )}
+                <span class="a">{p.data.authors}{p.data.venue && ` · ${p.data.venue}`}</span>
+              </span>
+              <span class="chips" role="cell">
+                {p.data.components.map((id) =>
+                  chapters[id] ? (
+                    <a class="chip" href={url(`/handbook/${id}/`)}>{pad2(chapters[id].data.order)} {chapters[id].data.title}</a>
+                  ) : (
+                    <span class="chip">{id}</span>
+                  ),
+                )}
+              </span>
+              {p.data.takeaway ? <span class="k" role="cell">{p.data.takeaway}</span> : <span class="k none" role="cell">— 待补充</span>}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Base>

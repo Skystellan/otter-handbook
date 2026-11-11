@@ -1,0 +1,44 @@
+---
+/** 手册的目录：先是地图，再是十九章的清单。 */
+import '../../styles/atlas.css';
+import '../../styles/home.css';
+import '../../styles/inner.css';
+import Base from '../../layouts/Base.astro';
+import Atlas from '../../components/Atlas.astro';
+import ChapterList from '../../components/ChapterList.astro';
+import { getChapters, pad2 } from '../../lib/handbook';
+
+const chapters = await getChapters();
+const started = chapters.filter((c) => c.data.status !== 'planned').length;
+---
+
+<Base title="手册" description="按模型结构组织的十九章：从分词器一路到量化部署。">
+  <section class="ph">
+    <div class="wrap">
+      <p class="crumbs label"><span class="accent">§</span><span>Handbook</span></p>
+      <div class="ph-title">
+        <div>
+          <h1>手册</h1>
+          <p class="ph-en">Nineteen chapters, organised by where things sit in the model.</p>
+        </div>
+      </div>
+      <p class="ph-lead">按模型结构组织：信息从 token 到 logits 一路经过的东西、让损失往下走的那一圈回路，以及训练之后的事。</p>
+      <dl class="ph-meta">
+        <div><dt class="label">章节</dt><dd>{pad2(chapters.length)}</dd></div>
+        <div><dt class="label">已动笔</dt><dd>{pad2(started)}<span class="meter" style={`--p:${started / chapters.length}`}></span></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap pad">
+      <Atlas />
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap pad">
+      <ChapterList chapters={chapters} />
+    </div>
+  </section>
+</Base>

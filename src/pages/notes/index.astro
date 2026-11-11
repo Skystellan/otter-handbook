@@ -1,0 +1,62 @@
+---
+/** 观察：按时间排的流水账。 */
+import { getCollection } from 'astro:content';
+import '../../styles/home.css';
+import '../../styles/inner.css';
+import Base from '../../layouts/Base.astro';
+import { fmtDate, pad2 } from '../../lib/handbook';
+import { kinds } from '../../site.config';
+import { url } from '../../lib/url';
+
+const notes = (await getCollection('notes', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+
+<Base title="观察" description="训练小模型时记下的现象、读到的结论、踩过的坑。">
+  <section class="ph">
+    <div class="wrap">
+      <p class="crumbs label"><span class="accent">§</span><span>Field notes</span></p>
+      <div class="ph-title">
+        <div>
+          <h1>观察</h1>
+          <p class="ph-en">What I saw, what I read, what went wrong.</p>
+        </div>
+      </div>
+      <p class="ph-lead">按时间排的流水账。每一条都标了它是哪一种 —— 自己跑出来的、别人文章里的、可以直接抄的、要小心的，还是没想明白的。</p>
+      <dl class="ph-meta">
+        <div><dt class="label">共</dt><dd>{pad2(notes.length)} 条</dd></div>
+        {
+          Object.entries(kinds).map(([key, k]) => (
+            <div><dd><span class="kind" data-kind={key}>{k.mark} {k.zh}</span></dd></div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap pad">
+      <ol class="notes">
+        {
+          notes.map((n) => (
+            <li>
+              <a class="note" href={url(`/notes/${n.id}/`)}>
+                <time datetime={fmtDate(n.data.date)}>{fmtDate(n.data.date)}</time>
+                <span class="kind" data-kind={n.data.kind}>{kinds[n.data.kind].mark} {kinds[n.data.kind].zh}</span>
+                <div>
+                  <h3>
+                    <span style={`view-transition-name:note-${n.id}`}>{n.data.title}</span>
+                    {n.data.sample && <span class="note-sample">示例</span>}
+                  </h3>
+                  {n.data.summary && <p>{n.data.summary}</p>}
+                </div>
+                <span class="row-arr" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+</Base>

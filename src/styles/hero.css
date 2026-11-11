@@ -1,0 +1,326 @@
+/* ───────────────────────────────────────────────────────────────
+   封面
+   一整屏：画布铺在最底下，文字压在左边，底下一条「印刷说明」。
+   ─────────────────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(620px, calc(100svh - var(--header-h)), 980px);
+  overflow: hidden;
+}
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* 画布一开始是空的：等第一帧画好再淡进来 */
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-out) 0.15s;
+}
+
+.hero.has-otter .hero-canvas {
+  opacity: 1;
+}
+
+.hero .reg-tl {
+  top: 14px;
+  left: 14px;
+}
+
+.hero .reg-tr {
+  top: 14px;
+  right: 14px;
+}
+
+/* 文字不挡指针：这样在字上面点一下，水面照样起涟漪；链接和按钮例外 */
+.hero-wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: clamp(28px, 5vh, 60px) clamp(24px, 4vh, 48px);
+  pointer-events: none;
+}
+
+.hero-wrap a,
+.hero-foot button {
+  pointer-events: auto;
+}
+
+.hero-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.blip {
+  width: 7px;
+  height: 7px;
+  background: var(--accent-ink);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .blip {
+    animation: blip 2.4s var(--ease) infinite;
+  }
+}
+
+@keyframes blip {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-ink) 55%, transparent);
+  }
+
+  70%,
+  100% {
+    box-shadow: 0 0 0 9px transparent;
+  }
+}
+
+.hero-title {
+  margin-top: clamp(10px, 2.4vh, 26px);
+  font-size: 0;
+  line-height: 0;
+}
+
+/* 整个站里最大的一块克莱因蓝 */
+.hero-word {
+  display: inline-flex;
+  margin-left: -0.05em;
+  padding: 0.06em 0.08em 0.02em 0;
+  overflow: hidden;
+  font: italic 400 clamp(124px, 19.5vw, 320px) / 0.8 var(--font-serif);
+  letter-spacing: -0.035em;
+  color: var(--accent-ink);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 五个字母一个接一个地从底下升上来 */
+  .js .hero-word span {
+    display: inline-block;
+    animation: rise 1.1s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 70ms + 80ms);
+  }
+
+  .js .hero-zh,
+  .js .hero-en,
+  .js .hero-lead,
+  .js .hero-cta,
+  .js .hero-kicker {
+    animation: fade-up 1s var(--ease-out) both;
+    animation-delay: 0.55s;
+  }
+
+  .js .hero-en {
+    animation-delay: 0.62s;
+  }
+
+  .js .hero-lead {
+    animation-delay: 0.7s;
+  }
+
+  .js .hero-cta {
+    animation-delay: 0.8s;
+  }
+
+  .js .hero-kicker {
+    animation-delay: 0.1s;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(105%) rotate(4deg);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.hero-zh {
+  margin-top: clamp(12px, 1.8vw, 24px);
+  font: 700 clamp(26px, 3.1vw, 46px) / 1.2 var(--font-serif);
+  letter-spacing: 0.18em;
+}
+
+.hero-en {
+  margin-top: 8px;
+  font: italic 400 clamp(19px, 1.9vw, 27px) / 1.3 var(--font-serif);
+  color: var(--ink-2);
+}
+
+.hero-lead {
+  max-width: 25em;
+  margin-top: clamp(16px, 2.4vh, 26px);
+  font-size: 15.5px;
+  line-height: 1.85;
+  color: var(--ink-2);
+}
+
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: clamp(20px, 3vh, 32px);
+}
+
+.hero .btn:not(.btn-primary) {
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.hero .btn:not(.btn-primary):hover {
+  background: var(--ink);
+}
+
+/* ── 印刷说明：几章几条、怎么印、用了哪几块版 ─────────────── */
+
+.hero-foot {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px 20px;
+  align-items: center;
+  padding-block: 14px;
+  pointer-events: none;
+}
+
+.hero-foot::before {
+  content: '';
+  position: absolute;
+  inset: 0 var(--gutter) auto;
+  height: 1px;
+  background: var(--rule);
+}
+
+.hero-count b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.modes {
+  display: inline-flex;
+  padding: 3px;
+  background: color-mix(in srgb, var(--paper) 76%, transparent);
+  border: 1px solid var(--rule-2);
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.modes button {
+  padding: 5px 14px;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  border-radius: 999px;
+  transition:
+    color 0.2s,
+    background 0.3s var(--ease-out);
+}
+
+.modes button:hover {
+  color: var(--ink);
+}
+
+.modes button[aria-checked='true'] {
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.hero-slug {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+/* 色标：黑版 100 / 50，蓝版 100 / 50 */
+.swatches {
+  display: flex;
+  gap: 2px;
+}
+
+.swatches i {
+  width: 9px;
+  height: 9px;
+  background: var(--print-ink);
+}
+
+.swatches i:nth-child(2) {
+  opacity: 0.45;
+}
+
+.swatches i:nth-child(n + 3) {
+  background: var(--print-blue);
+}
+
+.swatches i:nth-child(4) {
+  opacity: 0.45;
+}
+
+.hero-hint {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 62px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.hero.has-otter .hero-hint {
+  opacity: 1;
+  transition-delay: 2.4s;
+}
+
+.hero.has-otter.is-touched .hero-hint {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+@media (max-width: 899px) {
+  .hero {
+    min-height: max(640px, calc(100svh - var(--header-h)));
+  }
+
+  .hero-wrap {
+    justify-content: flex-start;
+  }
+
+  .hero-word {
+    font-size: clamp(110px, 33vw, 230px);
+  }
+
+  .hero-lead {
+    font-size: 14.5px;
+  }
+
+  .hero-foot {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-count,
+  .hero-slug,
+  .hero-hint {
+    display: none;
+  }
+
+  .hero-foot {
+    justify-items: center;
+  }
+
+  .hero-slug {
+    justify-content: flex-start;
+    white-space: normal;
+  }
+}

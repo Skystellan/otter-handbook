@@ -1,0 +1,30 @@
+---
+import '../styles/inner.css';
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url';
+---
+
+<Base title="404">
+  <section class="ph lost">
+    <div class="wrap">
+      <p class="crumbs label"><span class="accent">§</span><span>404 · Not found</span></p>
+      <!-- 一条损失曲线，和卡在局部极小值里来回晃的那个点 -->
+      <svg viewBox="0 0 560 180" aria-hidden="true">
+        <path class="axis" d="M20 10V160H550"></path>
+        <path class="curve" d="M30 22C80 60 110 118 160 124S220 96 250 104 300 150 350 152 430 60 470 58 520 140 545 150"></path>
+        <circle class="ball" cx="165" cy="121" r="6"></circle>
+        <text x="150" y="152">you are here</text>
+        <text x="26" y="176">loss</text>
+        <text x="520" y="176">step</text>
+      </svg>
+      <div class="ph-title">
+        <h1>陷入了局部极小值</h1>
+      </div>
+      <p class="ph-lead">这个地址下面什么都没有。换个学习率，或者直接回到首页。</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:28px">
+        <a class="btn btn-primary" href={url('/')}>回到首页 <span class="arr">→</span></a>
+        <a class="btn" href={url('/handbook/')}>看目录 <span class="arr">→</span></a>
+      </div>
+    </div>
+  </section>
+</Base>

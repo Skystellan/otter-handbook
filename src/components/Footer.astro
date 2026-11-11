@@ -1,0 +1,38 @@
+---
+import { parts, site } from '../site.config';
+import { url } from '../lib/url';
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <p class="footer-say">{site.tagline}<br />一本写给训练小模型的人的开源手册。</p>
+      <div>
+        <h3 class="label">手册</h3>
+        <ul>
+          {Object.values(parts).map((p) => <li><a href={url('/handbook/')}>{p.no} · {p.zh}</a></li>)}
+        </ul>
+      </div>
+      <div>
+        <h3 class="label">站内</h3>
+        <ul>
+          {site.nav.map((item) => <li><a href={url(item.href)}>{item.label}</a></li>)}
+        </ul>
+      </div>
+      <div>
+        <h3 class="label">项目</h3>
+        <ul>
+          <li><a href={site.repo} rel="noopener">GitHub ↗</a></li>
+          <li><a href={url('/about/')}>怎么参与</a></li>
+          <li><a href={url('/lab/')}>试片台</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-base label">
+      <span>{site.name} {site.version} · © {site.author} · {site.license}</span>
+      <span>Instrument Serif · 宋体 · JetBrains Mono</span>
+      <span>封面是一段着色器：一只用距离场捏的海獭，印成双色网点</span>
+    </div>
+  </div>
+  <span class="footer-word dots" aria-hidden="true">{site.name}</span>
+</footer>

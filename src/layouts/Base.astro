@@ -1,0 +1,105 @@
+---
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
+import '../styles/base.css';
+
+// 等宽字体用完整字形的自托管文件
+import monoRegular from 'jetbrains-mono/fonts/webfonts/JetBrainsMonoNL-Regular.woff2?url';
+import monoMedium from 'jetbrains-mono/fonts/webfonts/JetBrainsMonoNL-Medium.woff2?url';
+import monoBold from 'jetbrains-mono/fonts/webfonts/JetBrainsMonoNL-Bold.woff2?url';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../site.config';
+import { url } from '../lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = site.description } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.nameZh}`;
+
+const face = (weight: number, src: string) =>
+  `@font-face{font-family:"JetBrains Mono NL";font-style:normal;font-weight:${weight};font-display:swap;src:url("${src}") format("woff2")}`;
+const fontCss = [face(400, monoRegular), face(500, monoMedium), face(700, monoBold)].join('');
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#f5f2e9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0d12" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <link rel="preload" as="font" type="font/woff2" href={monoRegular} crossorigin />
+    <style is:inline set:html={fontCss}></style>
+    <script is:inline>
+      // 在首帧之前定好主题，避免闪一下。没选过就跟随系统
+      (function () {
+        var root = document.documentElement;
+        var theme = null;
+        try {
+          theme = localStorage.getItem('theme');
+        } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        root.dataset.theme = theme;
+        root.classList.add('js');
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="sr-only" href="#main">跳到正文</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // 明暗主题：点一下换一种，记住选择
+      document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const root = document.documentElement;
+          const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem('theme', next);
+          } catch {
+            // 存不了就算了，这一页照样生效
+          }
+        });
+      });
+
+      // 进场：滚到视口里的时候才显出来
+      const targets = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-in');
+              io.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px' },
+        );
+        targets.forEach((el) => io.observe(el));
+        // 标签页在后台的时候观察器不一定会触发：保险起见，过一会儿全都显出来
+        setTimeout(() => targets.forEach((el) => el.classList.add('is-in')), 2600);
+      } else {
+        targets.forEach((el) => el.classList.add('is-in'));
+      }
+    </script>
+  </body>
+</html>

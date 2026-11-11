@@ -1,0 +1,410 @@
+/* ───────────────────────────────────────────────────────────────
+   地图：左边一张 SVG 示意图，右边一块检视面板
+   ─────────────────────────────────────────────────────────────── */
+
+.atlas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: clamp(20px, 3vw, 48px);
+  align-items: start;
+}
+
+.atlas-compact {
+  display: block;
+}
+
+.atlas-map {
+  padding: clamp(10px, 2vw, 26px);
+  background:
+    radial-gradient(circle at center, var(--rule) 0 1px, transparent 1.4px) 0 0 / 20px 20px,
+    var(--paper);
+  border: 1px solid var(--rule);
+}
+
+.atlas-compact .atlas-map {
+  padding: 8px;
+}
+
+.atlas svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: var(--font-mono);
+}
+
+/* ── 线 ── */
+
+.atlas .w {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+  transition:
+    stroke 0.25s,
+    stroke-width 0.25s;
+}
+
+.atlas .w-skip {
+  stroke: var(--ink-4);
+}
+
+.atlas .w-grad {
+  stroke: var(--accent-ink);
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+
+.atlas .w-loop,
+.atlas .w-rack {
+  fill: color-mix(in srgb, var(--paper-2) 55%, transparent);
+  stroke: var(--rule-2);
+  stroke-width: 1;
+  transition: stroke 0.25s;
+}
+
+.atlas .w-loop {
+  stroke-dasharray: 5 4;
+}
+
+.atlas .plus circle {
+  fill: var(--paper);
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+}
+
+.atlas .plus path {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+}
+
+.atlas .tokens circle {
+  fill: var(--accent-ink);
+  offset-path: path('M250 590V50');
+  offset-distance: 0%;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .atlas .tokens circle {
+    animation: token-up 6.5s linear infinite;
+    animation-delay: calc(var(--i) * -1.3s);
+  }
+
+  .atlas .w-grad {
+    animation: grad-flow 1.1s linear infinite;
+  }
+}
+
+@keyframes token-up {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+
+  6%,
+  94% {
+    opacity: 1;
+  }
+
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes grad-flow {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* ── 字 ── */
+
+.atlas .t-note,
+.atlas .t-var,
+.atlas .t-rack {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  fill: var(--ink-3);
+}
+
+.atlas .t-grad {
+  fill: var(--accent-ink);
+}
+
+.atlas .t-var {
+  transition: fill 0.25s;
+}
+
+.atlas .t-rack {
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+
+.atlas .t-rack-zh,
+.atlas .n-zh {
+  font: 12px var(--font-sans);
+  fill: var(--ink-3);
+}
+
+/* ── 框：每一个都是一章的入口 ── */
+
+.atlas .node rect {
+  fill: var(--paper);
+  stroke: var(--rule-2);
+  stroke-width: 1;
+  transition:
+    fill 0.25s var(--ease-out),
+    stroke 0.25s;
+}
+
+.atlas .node-dashed rect {
+  stroke-dasharray: 4 3;
+}
+
+.atlas .node-text rect {
+  fill: transparent;
+  stroke: transparent;
+}
+
+.atlas .n-no {
+  font-size: 10px;
+  fill: var(--ink-3);
+}
+
+.atlas .n-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: var(--ink);
+}
+
+.atlas .node-thin .n-label,
+.atlas .node-pill .n-label,
+.atlas .node-text .n-label {
+  font-size: 11px;
+}
+
+.atlas .n-hint {
+  font-size: 10px;
+  fill: var(--accent-ink);
+}
+
+.atlas .node text {
+  transition: fill 0.2s;
+}
+
+.atlas .node:hover rect,
+.atlas .node:focus-visible rect,
+.atlas .node.is-active rect {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.atlas .node:hover text,
+.atlas .node:focus-visible text,
+.atlas .node.is-active text {
+  fill: var(--on-accent);
+}
+
+.atlas .node:focus-visible {
+  outline: none;
+}
+
+/* 选中一个组件的时候，和它有关的线、小字跟着亮 */
+.atlas[data-active='residual'] .w-skip,
+.atlas[data-active='loop'] .w-loop {
+  stroke: var(--accent-ink);
+  stroke-width: 1.8;
+}
+
+.atlas[data-active='optimizer'] .w-grad,
+.atlas[data-active='schedule'] .w-grad,
+.atlas[data-active='objective'] .w-grad {
+  stroke-width: 2.2;
+}
+
+.atlas[data-active='tokenizer'] .v-tokenizer,
+.atlas[data-active='embedding'] .v-embedding,
+.atlas[data-active='position'] .v-position,
+.atlas[data-active='normalization'] .v-normalization,
+.atlas[data-active='attention'] .v-attention,
+.atlas[data-active='ffn'] .v-ffn,
+.atlas[data-active='residual'] .v-residual,
+.atlas[data-active='head'] .v-head {
+  fill: var(--accent-ink);
+}
+
+/* ── 检视面板 ── */
+
+.insp {
+  position: sticky;
+  top: calc(var(--header-h) + 20px);
+  min-height: 430px;
+  padding: clamp(18px, 2vw, 26px);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+
+.panel-idle {
+  margin-top: 16px;
+  font: 700 23px / 1.4 var(--font-serif);
+  letter-spacing: 0.04em;
+}
+
+.panel-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.panel-no {
+  font: 400 62px / 0.82 var(--font-serif);
+  color: var(--accent-ink);
+}
+
+.panel h3:not(.panel-idle) {
+  font: 700 21px / 1.3 var(--font-serif);
+  letter-spacing: 0.04em;
+}
+
+.panel-en {
+  font: italic 400 15.5px / 1.3 var(--font-serif);
+  color: var(--ink-3);
+}
+
+.panel-fig {
+  display: block;
+  width: 100%;
+  height: 124px;
+  margin-top: 16px;
+  background: color-mix(in srgb, var(--paper-2) 60%, transparent);
+  border: 1px solid var(--rule);
+}
+
+.panel-blurb {
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--ink-2);
+}
+
+.panel-cats {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.panel-cats dt {
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.panel-cats dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.panel-foot {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.panel-go {
+  margin-left: auto;
+  font-size: 13.5px;
+  color: var(--accent-ink);
+  white-space: nowrap;
+}
+
+.panel-go .arr {
+  display: inline-block;
+  font-family: var(--font-mono);
+  transition: transform 0.3s var(--ease-out);
+}
+
+.panel-go:hover .arr {
+  transform: translateX(4px);
+}
+
+.legend {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  font-size: 13px;
+  color: var(--ink-2);
+  border-top: 1px solid var(--rule);
+}
+
+.legend li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.lg {
+  width: 28px;
+  height: 0;
+  border-top: 1.5px solid var(--ink-3);
+}
+
+.lg-grad {
+  border-top: 2px dotted var(--accent-ink);
+}
+
+.lg-skip {
+  border-color: var(--ink-4);
+}
+
+.lg-loop {
+  height: 10px;
+  border: 1px dashed var(--rule-2);
+  border-radius: 3px;
+}
+
+.panel-progress {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.panel-progress b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.panel-progress .meter {
+  flex: 1;
+}
+
+@media (max-width: 980px) {
+  .atlas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insp {
+    position: static;
+    min-height: 0;
+  }
+}
+
+/* 窄屏上图会缩得很小：让它可以横向滑 */
+@media (max-width: 640px) {
+  .atlas-map {
+    overflow-x: auto;
+  }
+
+  .atlas:not(.atlas-compact) svg {
+    width: 720px;
+  }
+}

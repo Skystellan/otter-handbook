@@ -1,0 +1,163 @@
+---
+import { getCollection } from 'astro:content';
+import '../styles/hero.css';
+import '../styles/atlas.css';
+import '../styles/home.css';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Atlas from '../components/Atlas.astro';
+import ChapterList from '../components/ChapterList.astro';
+import { fmtDate, getChapters, pad2 } from '../lib/handbook';
+import { kinds, site } from '../site.config';
+import { offmap } from '../data/offmap';
+import { url } from '../lib/url';
+
+const chapters = await getChapters();
+const notes = (await getCollection('notes', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const papers = await getCollection('papers');
+---
+
+<Base>
+  <Hero chapters={chapters.length} notes={notes.length} papers={papers.length} latest={notes[0]?.data.date} />
+
+  <!-- ── 01 地图 ─────────────────────────────────────────────── -->
+  <section class="band" id="atlas">
+    <div class="wrap pad">
+      <header class="sh reveal">
+        <div>
+          <p class="sh-no"><b class="dots">01</b><span class="label">Atlas · Fig. 1</span></p>
+          <h2>先看地图，再挑一处读</h2>
+        </div>
+        <p class="sh-lead">
+          一副装得下大部分做法的通用骨架。每个框是一个位置，往里填哪一种，看框右边那行小字；把指针移上去，右边会告诉你这一章拆成了哪几类、写到了哪一步。
+        </p>
+      </header>
+
+      <div class="reveal"><Atlas /></div>
+
+      <div class="offmap-head reveal">
+        <h3>图上画不出来的</h3>
+        <p class="label">六件一张平面图装不下的事</p>
+      </div>
+      <ol class="offmap reveal">
+        {
+          offmap.map((o, i) => {
+            const c = chapters.find((ch) => ch.id === o.chapter)!;
+            return (
+              <li>
+                <a href={url(`/handbook/${c.id}/`)}>
+                  <span class="label">{pad2(i + 1)}</span>
+                  <h4>{o.title}</h4>
+                  <p>{o.text}</p>
+                  <span class="label to">→ {pad2(c.data.order)} {c.data.title}</span>
+                </a>
+              </li>
+            );
+          })
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ── 02 目录 ─────────────────────────────────────────────── -->
+  <section class="band" id="contents">
+    <div class="wrap pad">
+      <header class="sh reveal">
+        <div>
+          <p class="sh-no"><b class="dots">02</b><span class="label">Contents</span></p>
+          <h2>十九章，三个部分</h2>
+        </div>
+        <p class="sh-lead">
+          从分词器一路到量化部署。每一章对应图上的一个框；状态是实话实说的 —— 大部分还没动笔，写到哪算哪。
+        </p>
+      </header>
+      <ChapterList chapters={chapters} />
+    </div>
+  </section>
+
+  <!-- ── 03 观察 ─────────────────────────────────────────────── -->
+  <section class="band" id="notes">
+    <div class="wrap pad">
+      <header class="sh reveal">
+        <div>
+          <p class="sh-no"><b class="dots">03</b><span class="label">Field notes</span></p>
+          <h2>最近记下的</h2>
+        </div>
+        <p class="sh-lead">按时间排的流水账：跑出来的现象、读到的结论、踩过的坑。每一条都挂在它所属的章节下面。</p>
+      </header>
+      <ol class="notes reveal">
+        {
+          notes.slice(0, 4).map((n) => (
+            <li>
+              <a class="note" href={url(`/notes/${n.id}/`)}>
+                <time datetime={fmtDate(n.data.date)}>{fmtDate(n.data.date)}</time>
+                <span class="kind" data-kind={n.data.kind}>
+                  {kinds[n.data.kind].mark} {kinds[n.data.kind].zh}
+                </span>
+                <div>
+                  <h3>
+                    {n.data.title}
+                    {n.data.sample && <span class="note-sample">示例</span>}
+                  </h3>
+                  {n.data.summary && <p>{n.data.summary}</p>}
+                </div>
+                <span class="row-arr" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ── 04 批注 ─────────────────────────────────────────────── -->
+  <section class="band" id="kinds">
+    <div class="wrap pad">
+      <header class="sh reveal">
+        <div>
+          <p class="sh-no"><b class="dots">04</b><span class="label">Legend</span></p>
+          <h2>五种批注，一眼分清</h2>
+        </div>
+        <p class="sh-lead">正文里每一条结论都标了出处的性质：是我自己跑出来的，还是别人文章里的；是可以直接抄的，还是要小心的。</p>
+      </header>
+      <ul class="kinds reveal">
+        {
+          Object.entries(kinds).map(([key, k]) => (
+            <li data-kind={key}>
+              <span class="mark" aria-hidden="true">{k.mark}</span>
+              <h3>
+                {k.zh}
+                <span>{k.en}</span>
+              </h3>
+              <p>{k.desc}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 结尾 ────────────────────────────────────────────────── -->
+  <section class="band">
+    <div class="wrap pad outro reveal">
+      <h2>{site.tagline.replace('。', '')}<br /><em>都记在这里。</em></h2>
+      <div>
+        <p>
+          这本手册是开源的，写到哪算哪。发现哪里写错了、哪条结论在你的规模上不成立，或者你也踩过一个值得记下来的坑 —— 欢迎直接提。
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href={url('/handbook/')}>
+            开始阅读
+            <span class="arr">→</span>
+          </a>
+          <a class="btn" href={site.repo} rel="noopener">
+            GitHub
+            <span class="arr">↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

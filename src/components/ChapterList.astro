@@ -1,0 +1,104 @@
+---
+/**
+ * 目录：三个部分，每一章一行。
+ * 指针划过某一行的时候，旁边会跟着一张小卡片，上面是那一章的小图（只在有鼠标的宽屏上）。
+ *
+ * props
+ *   current  当前所在的章节：那一行会标出来
+ *   named    给每个标题起一个「换页动画」用的名字，点进去的时候标题会从这一行长到章节页的大标题上。
+ *            同一页上同一章只能有一处起名，所以一页里放了两份目录的话，第二份要关掉
+ */
+import { groupByPart, pad2, type Chapter } from '../lib/handbook';
+import { statusLabel } from '../site.config';
+import { url } from '../lib/url';
+
+interface Props {
+  chapters: Chapter[];
+  current?: string;
+  named?: boolean;
+}
+
+const { chapters, current, named = true } = Astro.props;
+const groups = groupByPart(chapters);
+---
+
+<div class="toc" data-toc>
+  {
+    groups.map((g) => (
+      <section class="part reveal">
+        <header class="part-head">
+          <span class="part-no">{g.no}</span>
+          <div>
+            <h3>{g.zh}</h3>
+            <p class="label">{g.en}</p>
+          </div>
+          <p class="part-lead">{g.lead}</p>
+        </header>
+        <ol class="rows">
+          {g.chapters.map((c) => (
+            <li>
+              <a class="row" href={url(`/handbook/${c.id}/`)} data-peek={c.id} aria-current={c.id === current ? 'page' : undefined}>
+                <span class="row-no">{pad2(c.data.order)}</span>
+                <span class="row-title">
+                  <b style={named ? `view-transition-name:ch-${c.id}` : undefined}>{c.data.title}</b>
+                  <i>{c.data.en}</i>
+                </span>
+                <span class="row-blurb">{c.data.blurb}</span>
+                <span class="row-meta">
+                  <span class="status" data-status={c.data.status}>{statusLabel[c.data.status]}</span>
+                  <span class="meter" style={`--p:${c.data.progress}`} />
+                </span>
+                <span class="row-arr" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+  <div class="peek" data-peek-card aria-hidden="true">
+    <canvas></canvas>
+    <p class="label"></p>
+  </div>
+</div>
+
+<script>
+  import { drawFig, hasFig } from '../lib/figs';
+
+  document.querySelectorAll<HTMLElement>('[data-toc]').forEach((toc) => {
+    const card = toc.querySelector<HTMLElement>('[data-peek-card]');
+    const canvas = card?.querySelector('canvas');
+    const label = card?.querySelector('p');
+    if (!card || !canvas || !label || !matchMedia('(hover: hover) and (min-width: 900px)').matches) return;
+
+    let id = '';
+    let raf = 0;
+    const tick = (ms: number) => {
+      raf = 0;
+      if (!id) return;
+      drawFig(canvas, id, ms / 1000);
+      raf = requestAnimationFrame(tick);
+    };
+
+    toc.querySelectorAll<HTMLElement>('[data-peek]').forEach((row) => {
+      row.addEventListener('pointerenter', () => {
+        id = row.dataset.peek ?? '';
+        if (!hasFig(id)) return;
+        label.textContent = row.querySelector('i')?.textContent ?? '';
+        card.classList.add('is-on');
+        drawFig(canvas, id, performance.now() / 1000);
+        if (!raf) raf = requestAnimationFrame(tick);
+      });
+      row.addEventListener('pointerleave', () => {
+        id = '';
+        card.classList.remove('is-on');
+      });
+    });
+    // 卡片跟着指针走，落在它的右上方
+    toc.addEventListener(
+      'pointermove',
+      (e) => (card.style.transform = `translate3d(${Math.min(e.clientX + 26, innerWidth - 310)}px, ${e.clientY - 150}px, 0)`),
+      { passive: true },
+    );
+  });
+</script>

@@ -1,0 +1,89 @@
+---
+/**
+ * 试片台：只有那只海獭，和四种「印法」的开关。调造型、调光的时候用。
+ * 地址栏参数：?mode=photo 选印法，?zoom=3&x=0.2&y=0.9 凑近了看。
+ */
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>otter · 试片台</title>
+    <style>
+      :root {
+        --paper: #f6f3ea;
+        --print-ink: #17171a;
+        --print-blue: #002fa7;
+        color-scheme: light;
+      }
+      :root[data-theme='dark'] {
+        --paper: #0c0e13;
+        --print-ink: #ecebe6;
+        --print-blue: #7d98ff;
+        color-scheme: dark;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: var(--paper);
+      }
+      .stage {
+        position: fixed;
+        inset: 0;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .bar {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        display: flex;
+        gap: 6px;
+        font: 12px ui-monospace, monospace;
+      }
+      button {
+        padding: 4px 10px;
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" data-stage><canvas></canvas></div>
+    <div class="bar" data-no-ripple>
+      <button data-mode="halftone">网点</button>
+      <button data-mode="ascii">字符</button>
+      <button data-mode="dither">抖动</button>
+      <button data-mode="photo">照片</button>
+      <button data-theme>明 / 暗</button>
+    </div>
+    <script>
+      import { mountOtter, type OtterHandle, type PrintMode } from '../lib/otter/renderer';
+
+      // 地址栏里可以带参数：?mode=photo 选印法；?zoom=3&x=0.2&y=0.9 凑近了看某一处（x、y 是它身子的中点落在画面的哪里）
+      const query = new URLSearchParams(location.search);
+      const num = (key: string, fallback: number) => Number(query.get(key) ?? fallback) || fallback;
+      const stage = document.querySelector<HTMLElement>('[data-stage]')!;
+      const otter = mountOtter(stage, stage.querySelector('canvas')!, {
+        center: () => [num('x', 0.5), num('y', 0.5)],
+        span: (w, h) => Math.min(w * 0.5, h * 0.8) * num('zoom', 1),
+      });
+      (window as unknown as { __otter?: OtterHandle | null }).__otter = otter;
+      const pick = query.get('mode') as PrintMode | null;
+      if (pick) otter?.mode(pick);
+      document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((btn) => {
+        btn.addEventListener('click', () => otter?.mode(btn.dataset.mode as PrintMode));
+      });
+      document.querySelector('[data-theme]:not(html)')?.addEventListener('click', () => {
+        const root = document.documentElement;
+        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      });
+    </script>
+  </body>
+</html>
