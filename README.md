@@ -36,6 +36,33 @@ npm run build    # 输出到 dist/，纯静态
 
 把 `obs` 换成 `lit`（文献）、`recipe`（配方）、`pitfall`（坑）、`open`（存疑）即可。现有的三条笔记和 `attention` 一章是排版示例（笔记标了 `sample: true`），写了真内容之后删掉。
 
+### 图片、公式和其他写法
+
+```markdown
+![warmup 太短时的 loss 曲线](./img/warmup-loss.png "图注：前 2k 步出现尖峰，之后与基线持平。")
+
+行内公式 $\mathcal{L} = -\sum_i \log p_\theta(x_i)$，块级公式：
+
+$$
+\theta_t = \theta_{t-1} - \eta \, \frac{\hat m_t}{\sqrt{\hat v_t} + \epsilon}
+$$
+
+站内链接直接从根路径写：[注意力一章](/handbook/attention/)
+
+<details>
+<summary>完整训练配置</summary>
+
+放长日志、完整配置、推导细节，默认折叠。
+
+</details>
+```
+
+- **图片**放在 Markdown 文件旁边的 `img/` 文件夹里（如 `src/content/notes/img/`），用 `./img/文件名` 引用。构建时会自动压缩成 webp。单独成段的图片按正文宽度居中显示；引号里的文字是图注，带图注的图会自动编号为 FIG. 01、02 等。
+- **公式**用 KaTeX，在构建时渲染，支持 `aligned`、`cases` 等环境。
+- **站内链接和 `public/` 里的文件**都从 `/` 开始写，部署到 GitHub Pages 时会自动补上 `/otter-handbook/`（见 `src/lib/markdown/base-path.mjs`）。
+- 也支持表格、代码高亮、脚注 `[^1]`、任务列表 `- [x]`、删除线 `~~…~~`，以及 `<details>`、`<video>` 等原生 HTML。
+- **不支持的**：Mermaid 流程图（只会当成代码显示），以及在 HTML 标签里用 `./` 相对路径引用图片（要插图请用 Markdown 的 `![]()` 写法）。
+
 ## 许可
 
 文字内容（`src/content/`、`src/data/`）采用 [CC BY 4.0](LICENSE-CONTENT)，代码采用 [MIT](LICENSE)。

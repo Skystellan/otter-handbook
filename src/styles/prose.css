@@ -5,7 +5,7 @@
 
 .prose {
   --chapter: '';
-  counter-reset: h2;
+  counter-reset: h2 fig;
   font-size: 16.5px;
   line-height: 1.9;
   color: var(--ink);
@@ -227,8 +227,83 @@
   background: var(--rule);
 }
 
+/* ── 图片与图注 ───────────────────────────────────────────────
+   单独成段的图片由 src/lib/markdown/figures.mjs 排成 <figure>；
+   ![说明](./img/a.png "图注") 里引号中的文字是图注，带图注的图块自动编号。 */
+
+.prose img,
+.prose video {
+  max-width: 100%;
+  height: auto;
+}
+
 .prose img {
   border: 1px solid var(--rule);
+}
+
+.prose figure {
+  margin-block: 2em;
+}
+
+.prose figure > :is(img, video, a) {
+  display: block;
+  margin-inline: auto;
+}
+
+.prose figure:has(figcaption) {
+  counter-increment: fig;
+}
+
+.prose figcaption {
+  max-width: 34em;
+  margin: 12px auto 0;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  color: var(--ink-3);
+}
+
+.prose figcaption::before {
+  content: 'FIG. ' counter(fig, decimal-leading-zero) '　';
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--accent-ink);
+}
+
+/* ── 折叠块 ───────────────────────────────────────────────────
+   <details><summary>标题</summary> … </details>，适合放长日志、完整配置、推导细节 */
+
+.prose details {
+  padding: 12px 18px;
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+}
+
+.prose summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 650;
+  font-size: 15.5px;
+}
+
+.prose summary::-webkit-details-marker {
+  display: none;
+}
+
+.prose summary::before {
+  content: '+';
+  display: inline-block;
+  width: 1.4em;
+  font: 500 13px/1 var(--font-mono);
+  color: var(--accent-ink);
+}
+
+.prose details[open] > summary::before {
+  content: '−';
+}
+
+.prose details > :not(summary) {
+  margin-top: 0.8em;
 }
 
 /* ── 公式 ─────────────────────────────────────────────────── */
