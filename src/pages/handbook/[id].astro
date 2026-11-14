@@ -14,7 +14,7 @@ import '../../styles/home.css';
 import '../../styles/inner.css';
 import Base from '../../layouts/Base.astro';
 import Atlas from '../../components/Atlas.astro';
-import { fmtDate, getChapters, getOutline, pad2 } from '../../lib/handbook';
+import { fmtDate, getChapters, getOutline, isVisibleNote, pad2 } from '../../lib/handbook';
 import { kinds, parts, statusLabel } from '../../site.config';
 import { url } from '../../lib/url';
 
@@ -36,7 +36,7 @@ const hasBody = (chapter.body ?? '').trim().length > 0;
 const outline = await getOutline(chapter);
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
-const notes = (await getCollection('notes', (n) => !n.data.draft && n.data.components.includes(chapter.id))).sort(
+const notes = (await getCollection('notes', (n) => isVisibleNote(n) && n.data.components.includes(chapter.id))).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
 const papers = (await getCollection('papers', (p) => p.data.components.includes(chapter.id))).sort(
@@ -84,6 +84,7 @@ const source = `src/content/handbook/${no}-${chapter.id}.md`;
       <aside class="ch-rail">
         <p class="label"><span>你在这里</span><span class="accent">§{no}</span></p>
         <Atlas current={chapter.id} compact />
+        <p class="atlas-hint">指针移上去放大 · 点框跳到那一章</p>
       </aside>
 
       <article class="ch-main">

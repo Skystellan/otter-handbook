@@ -4,11 +4,11 @@ import { getCollection } from 'astro:content';
 import '../../styles/home.css';
 import '../../styles/inner.css';
 import Base from '../../layouts/Base.astro';
-import { fmtDate, pad2 } from '../../lib/handbook';
+import { fmtDate, isVisibleNote, pad2 } from '../../lib/handbook';
 import { kinds } from '../../site.config';
 import { url } from '../../lib/url';
 
-const notes = (await getCollection('notes', ({ data }) => !data.draft)).sort(
+const notes = (await getCollection('notes', isVisibleNote)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
 ---
@@ -48,6 +48,7 @@ const notes = (await getCollection('notes', ({ data }) => !data.draft)).sort(
                   <h3>
                     <span style={`view-transition-name:note-${n.id}`}>{n.data.title}</span>
                     {n.data.sample && <span class="note-sample">示例</span>}
+                    {n.data.draft && <span class="note-sample">草稿</span>}
                   </h3>
                   {n.data.summary && <p>{n.data.summary}</p>}
                 </div>

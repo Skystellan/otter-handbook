@@ -4,12 +4,12 @@ import 'katex/dist/katex.min.css';
 import '../../styles/prose.css';
 import '../../styles/inner.css';
 import Base from '../../layouts/Base.astro';
-import { fmtDate, getChapters, pad2 } from '../../lib/handbook';
+import { fmtDate, getChapters, isVisibleNote, pad2 } from '../../lib/handbook';
 import { kinds } from '../../site.config';
 import { url } from '../../lib/url';
 
 export async function getStaticPaths() {
-  const notes = await getCollection('notes', ({ data }) => !data.draft);
+  const notes = await getCollection('notes', isVisibleNote);
   return notes.map((note) => ({ params: { id: note.id }, props: { note } }));
 }
 
@@ -30,6 +30,7 @@ const linked = note.data.components.map((id) => chapters[id]).filter((c) => c !=
         <span>/</span>
         <span class="kind" data-kind={note.data.kind}>{kind.mark} {kind.en}</span>
         {note.data.sample && <span>· 示例</span>}
+        {note.data.draft && <span>· 草稿</span>}
       </p>
       <div class="ph-title">
         <h1 style={`view-transition-name:note-${note.id};font-size:clamp(30px,4.4vw,60px)`}>{note.data.title}</h1>

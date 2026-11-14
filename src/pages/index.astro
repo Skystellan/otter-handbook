@@ -7,13 +7,13 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import Atlas from '../components/Atlas.astro';
 import ChapterList from '../components/ChapterList.astro';
-import { fmtDate, getChapters, pad2 } from '../lib/handbook';
+import { fmtDate, getChapters, isVisibleNote, pad2 } from '../lib/handbook';
 import { kinds, site } from '../site.config';
 import { offmap } from '../data/offmap';
 import { url } from '../lib/url';
 
 const chapters = await getChapters();
-const notes = (await getCollection('notes', ({ data }) => !data.draft)).sort(
+const notes = (await getCollection('notes', isVisibleNote)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
 const papers = await getCollection('papers');
@@ -100,6 +100,7 @@ const papers = await getCollection('papers');
                   <h3>
                     {n.data.title}
                     {n.data.sample && <span class="note-sample">示例</span>}
+                    {n.data.draft && <span class="note-sample">草稿</span>}
                   </h3>
                   {n.data.summary && <p>{n.data.summary}</p>}
                 </div>

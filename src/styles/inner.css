@@ -104,6 +104,8 @@ a.chip:hover {
 .ch-rail {
   position: sticky;
   top: calc(var(--header-h) + 24px);
+  /* 放大的小地图要盖在正文上面，但仍在页头之下 */
+  z-index: 10;
   display: grid;
   gap: 14px;
 }

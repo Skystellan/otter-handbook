@@ -25,6 +25,52 @@
   padding: 8px;
 }
 
+/* 小地图下面的一行提示，只在能放大的设备上显示（见下面的媒体查询） */
+.atlas-hint {
+  display: none;
+  font: 400 11px/1.5 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-4);
+}
+
+/* 章节页侧栏的小地图太小，字看不清、框也不好点：
+   有鼠标的宽屏上，指针移上去（或用 Tab 聚焦到某个框）时，以左上角为原点放大，浮在正文上面。
+   放大是 transform，命中区域跟着变大，指针在放大后的图上移动不会让它缩回去。 */
+@media (hover: hover) and (pointer: fine) and (min-width: 821px) and (min-height: 640px) {
+  .atlas-compact .atlas-map {
+    --atlas-zoom: 2.6;
+    transform-origin: 0 0;
+    transition:
+      transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) 0.18s,
+      box-shadow 0.22s 0.18s;
+  }
+
+  .atlas-compact:is(:hover, :focus-within) .atlas-map {
+    /* --atlas-shift 由 Atlas.astro 的脚本算出：放大后超出窗口底部时往上挪 */
+    transform: translateY(var(--atlas-shift, 0px)) scale(var(--atlas-zoom));
+    box-shadow:
+      0 0 0 1px var(--rule-2),
+      0 24px 60px -18px rgb(0 0 0 / 0.45);
+    transition-delay: 0.08s;
+  }
+
+  .atlas-hint {
+    display: block;
+  }
+}
+
+@media (max-width: 1180px) {
+  .atlas-compact .atlas-map {
+    --atlas-zoom: 2.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atlas-compact .atlas-map {
+    transition: none;
+  }
+}
+
 .atlas svg {
   width: 100%;
   height: auto;

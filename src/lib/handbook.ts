@@ -54,3 +54,6 @@ export function progressBar(progress: number, width = 8) {
 }
 
 export const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+
+/** 草稿笔记（frontmatter 里 draft: true）只在本地 npm run dev 里显示，构建上线时排除。 */
+export const isVisibleNote = ({ data }: { data: { draft: boolean } }) => import.meta.env.DEV || !data.draft;

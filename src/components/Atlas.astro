@@ -266,6 +266,26 @@ const done = chapters.filter((c) => c.data.status !== 'planned').length;
       });
     });
     atlas.addEventListener('keydown', (e) => e.key === 'Escape' && show(home));
+    // 侧栏小地图：指针离开、焦点移出后，高亮回到当前章节
+    if (atlas.classList.contains('atlas-compact')) {
+      atlas.addEventListener('pointerleave', () => show(home));
+      atlas.addEventListener('focusout', (e) => !atlas.contains(e.relatedTarget as Node | null) && show(home));
+
+      // 放大后若会超出窗口底部，就整体往上挪，但不盖住页头（放大本身由 atlas.css 的 :hover 控制）
+      const map = atlas.querySelector<HTMLElement>('.atlas-map')!;
+      const place = () => {
+        const zoom = parseFloat(getComputedStyle(map).getPropertyValue('--atlas-zoom')) || 1;
+        const header = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 0;
+        const top = atlas.getBoundingClientRect().top;
+        const bottom = top + map.offsetHeight * zoom;
+        let shift = Math.min(0, innerHeight - 12 - bottom);
+        shift = Math.max(shift, header + 8 - top);
+        map.style.setProperty('--atlas-shift', `${Math.min(0, shift)}px`);
+      };
+      atlas.addEventListener('pointerenter', place);
+      atlas.addEventListener('focusin', place);
+      addEventListener('scroll', () => atlas.matches(':hover, :focus-within') && place(), { passive: true });
+    }
     new IntersectionObserver(([entry]) => {
       seen = !!entry?.isIntersecting;
       if (seen && !raf) raf = requestAnimationFrame(tick);
