@@ -36,6 +36,55 @@
   url: https://arxiv.org/abs/2002.05202
   components: [ffn]
 
+- id: deepseek-v3-2024
+  title: DeepSeek-V3 Technical Report
+  authors: DeepSeek-AI
+  year: 2024
+  url: https://arxiv.org/abs/2412.19437
+  components: [ffn]
+  takeaway: 256 选 8 + 1 共享专家的细粒度形态、无辅助损失偏置均衡与节点受限路由，确立了现代开源 MoE 的工程基准。
+
+- id: abnar2025
+  title: "Parameters vs FLOPs: Scaling Laws for Optimal Sparsity for Mixture-of-Experts Language Models"
+  authors: Abnar et al.
+  year: 2025
+  url: https://arxiv.org/abs/2501.12370
+  components: [ffn]
+  takeaway: 固定总参数时稀疏度有抛物线最优点，小总参预算下过度稀疏反而掉点；阅读理解类任务在同预训练 loss 下更偏好稠密计算。
+
+- id: ludziejewski2025
+  title: "Joint MoE Scaling Laws: Mixture of Experts Can Be Memory Efficient"
+  authors: Ludziejewski et al.
+  year: 2025
+  venue: ICML 2025
+  url: https://arxiv.org/abs/2502.05172
+  components: [ffn]
+  takeaway: 把显存约束纳入 scaling law：小专家数 MoE 配合长 token 过训练并不天然比同质量 dense 更费显存，但细粒度百专家区间仍受总参硬约束。
+
+- id: tian2025
+  title: "Towards Greater Leverage: Scaling Laws for Efficient Mixture-of-Experts Language Models"
+  authors: Tian et al.
+  year: 2025
+  url: https://arxiv.org/abs/2507.17702
+  components: [ffn]
+  takeaway: 激活比 A 是 MoE 效率杠杆的主效应（幂律单调），专家粒度 G 在 8–12 呈平坦最优，共享专家给 1 个即可；但 MoE 最优 batch size 显著大于同算力 dense。
+
+- id: kimi-k2-2025
+  title: "Kimi K2: Open Agentic Intelligence"
+  authors: Kimi Team
+  year: 2025
+  url: https://arxiv.org/abs/2507.20534
+  components: [ffn]
+  takeaway: 在 Muon 下固定 top-8+1 只扩专家池，验证路由稀疏度从 8 到 64 时 loss 持续下降；停在 48（384 选 8）是向基础设施复杂度妥协。
+
+- id: ling2-2025
+  title: "Every Activation Boosted: Scaling General Reasoner to 1 Trillion Open Language Foundation"
+  authors: Ling Team
+  year: 2025
+  url: https://arxiv.org/abs/2510.22115
+  components: [ffn]
+  takeaway: 把 EL scaling law 落到 16B–1T 全系（256 选 8 + 1 共享），并在 0.85B 激活的小档位上实测验证了约 7× 的训练 FLOPs 杠杆。
+
 - id: su2021
   title: "RoFormer: Enhanced Transformer with Rotary Position Embedding"
   authors: Su et al.
