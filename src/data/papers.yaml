@@ -85,6 +85,14 @@
   components: [ffn]
   takeaway: 把 EL scaling law 落到 16B–1T 全系（256 选 8 + 1 共享），并在 0.85B 激活的小档位上实测验证了约 7× 的训练 FLOPs 杠杆。
 
+- id: tian2026hyper
+  title: "Hyperparameter Scaling Laws Across MoE Sparsity"
+  authors: Tian et al.
+  year: 2026
+  url: https://arxiv.org/abs/2609.08690
+  components: [ffn, optimizer, schedule]
+  takeaway: 用 1800 次实验给出 Muon 下稀疏度对最优超参的幂律修正（峰值 lr ∝ A^0.136、最优 batch ∝ A^-0.084），量化了越稀疏单专家梯度噪声越大带来的超参漂移。
+
 - id: su2021
   title: "RoFormer: Enhanced Transformer with Rotary Position Embedding"
   authors: Su et al.
